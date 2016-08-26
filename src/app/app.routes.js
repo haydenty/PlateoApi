@@ -1,30 +1,48 @@
-plateoApp.config(function ($routeProvider) {
+plateoApp.config(function($routeProvider) {
     $routeProvider
-        .when('/', {
-            templateUrl: 'app/components/home/home.html',
-            controller: 'mainController'
-        })
-
+      .when('/', {
+          templateUrl: 'app/components/home/home.html',
+          controller: 'mainController',
+          access: {
+              requiredLogin: false
+          }
+      })
     .when('/plateSearch', {
             templateUrl: 'app/components/search/plateSearch.html',
-            controller: 'searchController'
+            controller: 'searchController',
+            access: {
+                requiredLogin: false
+            }
         })
-        .when('/myPlates', { //TODO: this requires login, other views that have follow buttons should use ng-if="loggedIn"
-            templateUrl: 'app/components/myPlates/myPlates.html',
-            controller: 'myPlatesController'
-        })
-
+    .when('/myPlates', { //TODO: this requires login, other views that have follow buttons should use ng-if="loggedIn"
+        templateUrl: 'app/components/myPlates/myPlates.html',
+        controller: 'myPlatesController',
+        access: {
+            requiredLogin: true
+        }
+    })
     .when('/plate', { //TODO: pass plate obj as parameter
         templateUrl: 'app/components/plate/plate.html',
-        controller: 'plateController'
+        controller: 'plateController',
+        access: {
+            requiredLogin: true
+        }
     })
-
     .when('/login', {
             templateUrl: 'app/shared/login/login.html',
-            controller: 'loginController'
+            controller: 'loginController',
+            access: {
+                requiredLogin: false
+            }
         })
-        .when('/register', {
-            templateUrl: 'app/shared/register/register.html',
-            controller: 'registerController'
-        })
+    .when('/register', {
+        templateUrl: 'app/shared/register/register.html',
+        controller: 'registerController',
+        access: {
+            requiredLogin: false
+        }
+    })
+    .otherwise({
+        redirectTo: '/'
+    })
 });
