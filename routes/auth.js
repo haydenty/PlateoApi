@@ -5,16 +5,27 @@ var userManager = require('./users.js');
 
 var auth = {
     login: function(req, res) {
+      console.log('Logging in...');
         var username = req.body.username || '';
         var password = req.body.password || '';
 
         if (username !== '' || password !== '') {
             areCredentialsValid(username, password, function(result) {
                 if (result) {
-                    res.json({
-                        token: genToken(username),
-                        message: 'login success'
-                    });
+                  userManager.getUser(username, function(resp){
+                    if(resp.status !== 401){
+                      res.json({
+                          token: genToken(username),
+                          user: resp,
+                          message: 'login success'
+                      });
+                    }
+                    else{
+                      res.status(401);
+                      res.json(resp);
+                    }
+                  });
+
                 } else {
                     res.status(401);
                     res.json({
@@ -32,10 +43,11 @@ var auth = {
         }
     },
     register: function(req, res) {
+      console.log('Registering...');
         var userAccountInfo = req.body;
         if (userAccountInfo.email.indexOf('@') > -1 && userAccountInfo.email.indexOf('.com') > -1) { //TODO: validate that it is a valid email
-            if (userAccountInfo.pass === userAccountInfo.verPass) {
-                if (userAccountInfo.pass.length >= 6) { //TODO: what else do I want to check length and contains upper and lower and special char
+            if (userAccountInfo.password === userAccountInfo.verifyPassword) {
+                if (userAccountInfo.password.length >= 6) { //TODO: what else do I want to check length and contains upper and lower and special char
                     userManager.createUser(userAccountInfo, function(resp){
                       if(resp.status !== 401){
                         res.json({
@@ -82,8 +94,7 @@ function genToken(user) {
     }, require('../middlewares/secret.js')());
     return {
         token: token,
-        expires: expires,
-        user: user
+        expires: expires
     };
 }
 
@@ -99,7 +110,7 @@ function areCredentialsValid(inUsername, inPassword, callback) {
         if (err) {
             console.log("Unable to connect to the db");
         } else {
-            var collection = db.collection('users');
+            var collection = db.collection('plateUsers');
             var query = {
                 username: {
                     $eq: inUsername

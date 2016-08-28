@@ -1,11 +1,12 @@
 var MongoClient = require('mongodb').MongoClient;
+var autoIncrement = require("mongodb-autoincrement");
 var constants = require('../plateoApi/constants.js');
 
 var users = {
     getAllUsers: function(req, res) {
         MongoClient.connect(constants.dbConnection, function(err, db) {
             if (!err) {
-                var collection = db.collection('users');
+                var collection = db.collection('plateUsers');
                 collection.find().toArray(function(error, users) {
                     if (!error) {
                         res.json(users);
@@ -29,12 +30,47 @@ var users = {
             }
         });
     },
-    getFriends: function(req, res) {
-        res.json([{
-            name: 'Martha'
-        }, {
-            name: 'Sammy'
-        }]);
+    getUser: function(username, callback) {
+      this.doesUsernameExist(username, function(resp) {
+
+          if (resp.doesExist) {
+              MongoClient.connect(constants.dbConnection, function(err, db) {
+                  if (!err) {
+                      var collection = db.collection('plateUsers');
+                      var query = {
+                        username :{
+                          $eq : username
+                        }
+                      };
+                      collection.find(query).toArray(function(error, users) {
+                          if (!error) {
+                              callback(users[0]);
+                          } else {
+                              //res.status(401);
+                              callback({
+                                  status: 401,
+                                  message: 'We messed up trying to get the user.',
+                                  errors: error
+                              });
+                          }
+                          db.close();
+                      });
+                  } else {
+                      callback({
+                          status: 401,
+                          message: 'Database connection issues, sorry try again.',
+                          errors: err
+                      });
+                  }
+              });
+          } else {
+              console.log(resp.message);
+              callback({
+                  status: 401,
+                  message: 'Username was not found.'
+              });
+          }
+      });
     },
     createUser: function(req, callback) {
         this.doesUsernameExist(req.username, function(resp) {
@@ -47,12 +83,17 @@ var users = {
             if (!resp.doesExist) {
                 var user = {
                     username: req.username,
+                    fistname: req.firstname,
+                    lastname: req.lastname,
                     email: req.email,
-                    password: req.pass
+                    password: req.password,
+                    role : 'default'
                 };
                 MongoClient.connect(constants.dbConnection, function(err, db) {
+                  autoIncrement.getNextSequence(db, 'plates', function(err, autoIndex) {
                     if (!err) {
-                        var collection = db.collection('users');
+                        user._id = autoIndex;
+                        var collection = db.collection('plateUsers');
                         collection.insert(user, function(error, result) {
                             if (error !== null) {
                                 callback({
@@ -75,6 +116,7 @@ var users = {
                         });
                     }
                 });
+              });
             } else {
                 callback({
                     status: 401,
@@ -86,13 +128,16 @@ var users = {
     doesUsernameExist: function(inUsername, callback) {
         MongoClient.connect(constants.dbConnection, function(err, db) {
             if (!err) {
-                var collection = db.collection('users');
+                var collection = db.collection('plateUsers');
                 var query = {
                     username: {
                         $eq: inUsername
                     }
                 };
-                collection.find(query).toArray(function(error, users) {
+                var projection = {
+                  password : 0
+                };
+                collection.find(query, projection).toArray(function(error, users) {
                     if (!error) {
                         if (users.length === 0) {
                             callback({
