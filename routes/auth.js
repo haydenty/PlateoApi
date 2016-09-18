@@ -14,6 +14,7 @@ var auth = {
                 if (result) {
                   userManager.getUser(username, function(resp){
                     if(resp.status !== 401){
+                      console.log('Logging in finished.');
                       res.json({
                           token: genToken(username),
                           user: resp,
@@ -50,6 +51,7 @@ var auth = {
                 if (userAccountInfo.password.length >= 6) { //TODO: what else do I want to check length and contains upper and lower and special char
                     userManager.createUser(userAccountInfo, function(resp){
                       if(resp.status !== 401){
+                        console.log('Registering finished.');
                         res.json({
                             token: genToken(userAccountInfo.username),
                             message: 'register success'

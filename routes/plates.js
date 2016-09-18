@@ -4,6 +4,7 @@ var constants = require('../plateoApi/constants.js');
 
 var plates = {
     createPlate: function(req, res) {
+      console.log('Creating Plate...');
         MongoClient.connect(constants.dbConnection, function(err, db) {
             autoIncrement.getNextSequence(db, 'plates', function(err, autoIndex) {
                 var collection = db.collection('plates');
@@ -18,6 +19,7 @@ var plates = {
                                 errors: error
                             });
                         } else {
+                          console.log('Plate created.');
                             res.json({});
                         }
                         db.close();
@@ -34,11 +36,13 @@ var plates = {
         });
     },
     getAllPlates: function(req, res) {
+      console.log('Getting all the plates...');
         MongoClient.connect(constants.dbConnection, function(err, db) {
             var collection = db.collection('plates');
             if (!err) {
                 collection.find().toArray(function(error, plates) {
                     if (!error) {
+                      console.log('Got all the plates.');
                         res.json(plates);
                     } else {
                         res.status(401);
@@ -62,7 +66,7 @@ var plates = {
     },
     getPlatesForUser: function(req, res) {
         var userId = req.params.id;
-        console.log(userId);
+        console.log('Getting plates for: ', userId);
         MongoClient.connect(constants.dbConnection, function(err, db) {
             var collection = db.collection('plateMapper');
             if (!err) {
@@ -88,6 +92,7 @@ var plates = {
                             };
                             collection2.find(query2).toArray(function(error, plates) {
                                 if (!error) {
+                                  console.log('Got the users plates.');
                                     res.json(plates);
                                 } else {
                                     res.status(401);
@@ -128,6 +133,7 @@ var plates = {
         });
     },
     followPlate: function(req, res) {
+      console.log('Following plate...');
         MongoClient.connect(constants.dbConnection, function(err, db) {
             autoIncrement.getNextSequence(db, 'plateMapper', function(err, autoIndex) {
                 var collection = db.collection('plateMapper');
@@ -142,6 +148,7 @@ var plates = {
                                 errors: error
                             });
                         } else {
+                          console.log('Finished following plate.');
                             res.json({});
                         }
                         db.close();

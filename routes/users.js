@@ -4,12 +4,14 @@ var constants = require('../plateoApi/constants.js');
 
 var users = {
     getAllUsers: function(req, res) {
+      console.log('Getting all users...');
         MongoClient.connect(constants.dbConnection, function(err, db) {
             if (!err) {
                 var collection = db.collection('plateUsers');
                 collection.find().toArray(function(error, users) {
                     if (!error) {
-                        res.json(users);
+                      console.log('Got all users.');
+                      res.json(users);
                     } else {
                         res.status(401);
                         res.json({
@@ -31,6 +33,7 @@ var users = {
         });
     },
     getUser: function(username, callback) {
+      console.log('Getting user: ', username);
       this.doesUsernameExist(username, function(resp) {
 
           if (resp.doesExist) {
@@ -44,6 +47,7 @@ var users = {
                       };
                       collection.find(query).toArray(function(error, users) {
                           if (!error) {
+                            console.log('Got the user');
                               callback(users[0]);
                           } else {
                               //res.status(401);
@@ -73,6 +77,7 @@ var users = {
       });
     },
     createUser: function(req, callback) {
+      console.log('Creating user...');
         this.doesUsernameExist(req.username, function(resp) {
             //pass the errors up the chain
             // if (resp.errors !== undefined || resp.errors !== null) {
@@ -102,6 +107,7 @@ var users = {
                                     errors: error
                                 });
                             } else {
+                              console.log('User was created');
                                 callback({
                                     userId: result.ops[0]._id
                                 });

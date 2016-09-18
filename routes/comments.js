@@ -20,6 +20,7 @@ var comments = {
                             errors: error
                         });
                     } else {
+                        console.log('Comment created.');
                         res.json({});
                     }
                     db.close();
@@ -36,6 +37,7 @@ var comments = {
       });
     },
     getComments: function(req, res){
+      console.log('Getting comments...');
       var pId = req.params.id;
       MongoClient.connect(constants.dbConnection, function(err, db) {
           var collection = db.collection('plateComments');
@@ -48,6 +50,7 @@ var comments = {
               var projection = { };
               collection.find(query, projection).toArray(function(error, plates) {
                   if (!error) {
+                      console.log('Got the comments');
                       res.json(plates);
                   } else {
                       res.status(401);
